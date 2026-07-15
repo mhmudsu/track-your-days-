@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Elke dag beter</title>
+<meta name="theme-color" content="#064e3b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Elke dag beter">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23064e3b'/%3E%3Cpath d='M28 52 L44 68 L74 34' stroke='%23fbbf24' stroke-width='10' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#f5f5f4; --kaart:#ffffff; --rand:#e7e5e4;
+    --inkt:#022c22; --dim:#78716c; --licht:#d6d3d1;
+    --groen:#047857; --groen-d:#065f46; --groen-donker:#064e3b;
+    --amber:#d97706; --amber-l:#fbbf24; --amber-bg:#fef3c7;
+    --rood:#e11d48; --rood-l:#ffe4e6; --groen-l:#d1fae5;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{
+    font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+    background:var(--bg); color:var(--inkt);
+    padding-bottom:calc(76px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:480px;margin:0 auto;padding:20px 16px 0}
+  .eyebrow{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--groen)}
+  h1{font-size:28px;font-weight:800;letter-spacing:-.02em;text-transform:capitalize}
+  .dagbalk{display:flex;gap:4px;margin-top:10px}
+  .dagbalk div{height:8px;flex:1;border-radius:99px;background:var(--licht)}
+  .dagbalk div.aan{background:var(--groen)}
+  .dagbalk-label{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-top:12px;margin-bottom:4px}
+  .dagbalk-label b{color:var(--groen-d)}
+
+  .invoer{display:flex;gap:8px;margin:18px 0 8px}
+  .invoer-extra{display:flex;gap:8px;align-items:center;margin-bottom:14px;font-size:12px;color:var(--dim)}
+  input{font:inherit;font-size:14px;border:1px solid var(--licht);border-radius:12px;padding:12px 14px;background:var(--kaart);outline:none;width:100%}
+  input:focus{border-color:var(--groen)}
+  input[type=date]{width:auto;padding:8px 10px;font-size:13px}
+  input.smal{width:64px;flex-shrink:0;text-align:center;padding:12px 6px}
+  .knop{border:0;border-radius:12px;background:var(--groen);color:#fff;padding:0 16px;font-size:20px;font-weight:700;cursor:pointer;flex-shrink:0}
+  .knop:active{background:var(--groen-d)}
+  .mini-knop{border:0;border-radius:10px;background:var(--groen);color:#fff;padding:8px 12px;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0}
+
+  ul{list-style:none}
+  .rij{display:flex;align-items:center;gap:10px;background:var(--kaart);border:1px solid var(--rand);border-radius:14px;padding:12px 14px;margin-bottom:8px}
+  .rij .titel{flex:1;font-size:14px;min-width:0;overflow-wrap:anywhere;cursor:pointer}
+  .rij.klaar .titel{text-decoration:line-through;color:var(--dim);cursor:default}
+  .rij.ster{border-color:var(--amber-l);background:#fffbeb}
+  .rij input{padding:8px 10px;font-size:14px}
+  .dl{font-size:10px;font-weight:700;border-radius:99px;padding:2px 8px;background:var(--bg);color:var(--dim);flex-shrink:0}
+  .dl.vandaag{background:var(--amber-bg);color:var(--amber)}
+  .dl.telaat{background:var(--rood-l);color:var(--rood)}
+  .ikoon-knop{border:0;background:none;color:var(--licht);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0}
+  .ikoon-knop:active{color:var(--rood)}
+  .ster-knop{border:0;background:none;cursor:pointer;font-size:16px;padding:4px;color:var(--licht);flex-shrink:0}
+  .ster-knop.aan{color:var(--amber)}
+  .vink{width:24px;height:24px;border-radius:99px;border:2px solid var(--licht);background:none;cursor:pointer;flex-shrink:0;position:relative}
+  .vink.aan{background:var(--groen);border-color:var(--groen)}
+  .vink.aan::after{content:"✓";color:#fff;font-size:13px;font-weight:800;position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  .sectiekop{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:20px 0 8px;display:flex;justify-content:space-between;align-items:center}
+  .link-knop{border:0;background:none;color:var(--groen);font-size:11px;font-weight:600;cursor:pointer;text-transform:none;letter-spacing:0}
+  .leeg{text-align:center;color:var(--dim);font-size:14px;padding:36px 12px;line-height:1.5}
+
+  /* gewoontes */
+  .habit{background:var(--kaart);border:1px solid var(--rand);border-radius:14px;padding:14px;margin-bottom:10px}
+  .habit-kop{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px}
+  .habit-kop .naam{font-size:14px;font-weight:600;overflow-wrap:anywhere;cursor:pointer}
+  .habit-kop .doel-tag{font-size:10px;font-weight:700;color:var(--groen-d);background:var(--groen-l);border-radius:99px;padding:1px 7px;margin-left:6px;white-space:nowrap}
+  .habit-bewerk{display:flex;gap:6px;flex:1;align-items:center}
+  .week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .dagvak{border:0;border-radius:10px;padding:8px 0;background:var(--bg);color:var(--dim);cursor:pointer;text-align:center}
+  .dagvak.aan{background:var(--groen);color:#fff}
+  .dagvak.vandaag{outline:2px solid var(--amber-l)}
+  .dagvak .dg{display:block;font-size:9px}
+  .dagvak .nr{display:block;font-size:12px;font-weight:800;margin-top:2px}
+  .habit-stats{display:flex;gap:12px;margin-top:10px;font-size:11px;color:var(--dim);flex-wrap:wrap;align-items:center}
+  .habit-stats b{color:var(--inkt)}
+  .habit-stats .vuur b{color:var(--amber)}
+  .habit-stats .maand-knop{margin-left:auto}
+  .hm-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px}
+  .hm-kop{font-size:9px;color:var(--dim);text-align:center}
+  .hm{border:0;border-radius:8px;aspect-ratio:1;background:var(--bg);color:var(--dim);font-size:11px;font-weight:600;cursor:pointer}
+  .hm.aan{background:var(--groen);color:#fff}
+  .hm.vandaag{outline:2px solid var(--amber-l)}
+  .hm.toekomst{display:flex;align-items:center;justify-content:center;background:none;color:var(--licht);cursor:default}
+
+  /* budget */
+  .saldo{background:var(--groen-donker);color:#fff;border-radius:18px;padding:16px 18px;margin:18px 0 14px}
+  .maand-nav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .maand-nav button{border:0;background:rgba(255,255,255,.12);color:#fff;border-radius:99px;width:28px;height:28px;font-size:16px;cursor:pointer;flex-shrink:0}
+  .maand-nav button:disabled{opacity:.25;cursor:default}
+  .saldo .eyebrow{color:#6ee7b7;text-align:center}
+  .saldo .bedrag{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-top:6px}
+  .saldo .bedrag.min{color:#fda4af}
+  .saldo .stroom{display:flex;gap:16px;margin-top:10px;font-size:13px}
+  .saldo .plus{color:#6ee7b7}.saldo .minus{color:#fda4af}
+  .potje{background:var(--kaart);border:1px solid var(--rand);border-radius:14px;padding:12px 14px;margin-bottom:8px;cursor:pointer}
+  .potje.actief{border-color:var(--groen);background:#ecfdf5}
+  .potje-kop{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .potje-kop .naam{font-size:14px;font-weight:600;overflow-wrap:anywhere}
+  .potje-kop .bedrag{font-size:14px;font-weight:800}
+  .potje-kop .bedrag.min{color:var(--rood)}
+  .doelbalk{height:6px;border-radius:99px;background:var(--bg);margin-top:8px;overflow:hidden}
+  .doelbalk div{height:100%;background:var(--amber-l)}
+  .doel-label{font-size:11px;color:var(--dim);margin-top:4px}
+  .mini-vorm{background:var(--kaart);border:1px dashed var(--licht);border-radius:14px;padding:12px;margin-bottom:8px}
+  .mini-vorm .velden{display:flex;gap:8px;margin-bottom:8px}
+  .mini-vorm .velden input:last-child{width:110px;flex-shrink:0}
+  .tx-vorm{background:var(--kaart);border:1px solid var(--rand);border-radius:14px;padding:12px;margin-bottom:14px}
+  .type-kies{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+  .type-kies button{border:0;border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;background:var(--bg);color:var(--dim);cursor:pointer}
+  .type-kies button.uit-aan{background:var(--rood);color:#fff}
+  .type-kies button.in-aan{background:var(--groen);color:#fff}
+  .type-kies button.over-aan{background:var(--amber);color:#fff}
+  .chip-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin:4px 0}
+  .chips{display:flex;gap:6px;overflow-x:auto;margin-bottom:8px;padding-bottom:2px}
+  .chips button{border:1px solid var(--licht);border-radius:99px;background:var(--kaart);color:var(--dim);font-size:12px;font-weight:600;padding:6px 12px;white-space:nowrap;cursor:pointer;flex-shrink:0}
+  .chips button.aan{background:var(--groen);border-color:var(--groen);color:#fff}
+  .chips button.aan-over{background:var(--amber);border-color:var(--amber);color:#fff}
+  .tx-velden{display:flex;gap:8px;margin-bottom:8px}
+  .tx-velden input:first-child{width:100px;flex-shrink:0}
+  .vol-knop{width:100%;border:0;border-radius:10px;background:var(--groen);color:#fff;padding:12px;font-size:14px;font-weight:700;cursor:pointer}
+  .vol-knop:active{background:var(--groen-d)}
+  .hint{font-size:12px;color:var(--dim);padding:4px 2px 8px}
+  .tx-icoon{width:32px;height:32px;border-radius:99px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+  .tx-icoon.in{background:var(--groen-l);color:var(--groen-d)}
+  .tx-icoon.uit{background:var(--rood-l);color:var(--rood)}
+  .tx-icoon.over{background:var(--amber-bg);color:var(--amber)}
+  .tx-info{flex:1;min-width:0}
+  .tx-info .oms{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tx-info .dat{font-size:11px;color:var(--dim)}
+  .tx-info .potje-tag{font-size:10px;font-weight:700;color:var(--groen-d);background:var(--groen-l);border-radius:99px;padding:1px 7px;margin-left:6px;white-space:nowrap}
+  .tx-bedrag{font-size:14px;font-weight:800}
+  .tx-bedrag.in{color:var(--groen-d)}.tx-bedrag.uit{color:var(--rood)}.tx-bedrag.over{color:var(--inkt)}
+
+  /* maandrapport */
+  .rapport-toggle{width:100%;border:1px solid var(--rand);background:var(--kaart);border-radius:14px;padding:11px;font-size:13px;font-weight:700;color:var(--groen-d);cursor:pointer;margin-bottom:14px}
+  .rapport{background:var(--kaart);border:1px solid var(--rand);border-radius:14px;padding:14px;margin-bottom:14px}
+  .rapport .quote{font-size:13px;text-align:center;margin-bottom:12px}
+  .rapport .quote.min{color:var(--rood)}
+  .donut{width:150px;height:150px;border-radius:50%;margin:0 auto 12px;position:relative}
+  .donut-gat{position:absolute;inset:24px;background:var(--kaart);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:15px}
+  .donut-gat .sub{font-size:10px;font-weight:600;color:var(--dim)}
+  .legenda li{display:flex;align-items:center;gap:8px;font-size:13px;padding:5px 0;border-bottom:1px solid var(--bg)}
+  .legenda li:last-child{border-bottom:0}
+  .legenda .stip{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+  .legenda .lnaam{flex:1;min-width:0;overflow-wrap:anywhere}
+  .legenda .bedragje{color:var(--dim);font-size:12px}
+  .legenda b.min{color:var(--rood)}.legenda b.plus{color:var(--groen-d)}
+  .rapport-kop{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin:16px 0 6px}
+  .staven{display:flex;gap:6px;align-items:flex-end}
+  .staaf-kolom{flex:1;border:0;background:none;cursor:pointer;display:flex;flex-direction:column;gap:4px;padding:0}
+  .staaf-vak{display:flex;gap:2px;align-items:flex-end;height:70px;width:100%;justify-content:center}
+  .staaf{width:10px;border-radius:3px 3px 0 0;display:block}
+  .staaf.in{background:var(--groen)}
+  .staaf.uit{background:var(--rood)}
+  .staaf-label{font-size:10px;color:var(--dim);text-align:center;width:100%}
+  .staaf-kolom.actief .staaf-label{color:var(--groen-d);font-weight:800}
+  .tips li{font-size:13px;padding:5px 0 5px 18px;position:relative;line-height:1.45}
+  .tips li::before{content:"→";position:absolute;left:0;color:var(--amber)}
+
+  footer{max-width:480px;margin:26px auto 0;padding:0 16px;display:flex;gap:16px;justify-content:center}
+  footer button{border:0;background:none;color:var(--dim);font-size:12px;cursor:pointer;text-decoration:underline}
+
+  nav{position:fixed;bottom:0;left:0;right:0;background:var(--kaart);border-top:1px solid var(--rand);padding-bottom:env(safe-area-inset-bottom)}
+  .tabs{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+  .tabs button{border:0;background:none;padding:10px 0 8px;font-size:11px;font-weight:600;color:var(--dim);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;position:relative}
+  .tabs button.aan{color:var(--groen)}
+  .tabs .glyph{font-size:20px;line-height:1}
+  .badge{position:absolute;top:6px;right:calc(50% - 24px);background:var(--rood);color:#fff;font-size:9px;font-weight:800;border-radius:99px;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Elke dag beter</p>
+    <h1 id="datum"></h1>
+    <div id="dagvoortgang"></div>
+  </header>
+  <main id="scherm"></main>
+</div>
+<footer>
+  <button onclick="exportBackup()">Back-up opslaan</button>
+  <button onclick="document.getElementById('import-bestand').click()">Back-up terugzetten</button>
+  <input type="file" id="import-bestand" accept="application/json" style="display:none" onchange="importBackup(event)">
+</footer>
+<nav>
+  <div class="tabs">
+    <button id="tab-taken" onclick="gaNaar('taken')"><span class="glyph">☑</span>Taken<span class="badge" id="badge-taken" style="display:none"></span></button>
+    <button id="tab-gewoontes" onclick="gaNaar('gewoontes')"><span class="glyph">↻</span>Gewoontes</button>
+    <button id="tab-budget" onclick="gaNaar('budget')"><span class="glyph">€</span>Budget</button>
+  </div>
+</nav>
+
+<script>
+"use strict";
+// ---------- opslag & migratie ----------
+const SLEUTEL = "elke-dag-beter-v1";
+let data = { tasks: [], habits: [], wallets: [], tx: [] };
+try {
+  const raw = localStorage.getItem(SLEUTEL);
+  if (raw) {
+    const p = JSON.parse(raw);
+    data = { tasks: p.tasks || [], habits: p.habits || [], wallets: p.wallets || [], tx: p.tx || [] };
+  }
+} catch (e) { /* eerste keer of corrupte data — start leeg */ }
+
+function migreer() {
+  if (data.wallets.length === 0) data.wallets.push({ id: "alg", name: "Algemeen", goal: null });
+  data.tx.forEach(t => {
+    if (!t.wallet || !data.wallets.find(w => w.id === t.wallet)) t.wallet = data.wallets[0].id;
+    if (t.type === "over" && (!t.toWallet || !data.wallets.find(w => w.id === t.toWallet))) t.type = "uit";
+  });
+  data.tasks.forEach(t => { if (t.due === undefined) t.due = null; });
+  data.habits.forEach(h => { if (h.weekGoal === undefined) h.weekGoal = null; });
+}
+migreer();
+
+function bewaar() {
+  try { localStorage.setItem(SLEUTEL, JSON.stringify(data)); } catch (e) { alert("Opslaan mislukt — opslag is mogelijk vol."); }
+}
+
+// ---------- helpers ----------
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const dateKey = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const vandaagKey = () => dateKey(new Date());
+const DAG_KORT = ["zo","ma","di","wo","do","vr","za"];
+const eur = new Intl.NumberFormat("nl-NL",{style:"currency",currency:"EUR"});
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function laatste7() {
+  const out = [];
+  for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate()-i); out.push(d); }
+  return out;
+}
+
+// --- reeksen (dagelijkse gewoontes) ---
+function huidigeReeks(days) {
+  let n = 0; const d = new Date();
+  if (!days[dateKey(d)]) d.setDate(d.getDate()-1);
+  while (days[dateKey(d)]) { n++; d.setDate(d.getDate()-1); }
+  return n;
+}
+function besteReeks(days) {
+  const keys = Object.keys(days).sort();
+  let best = 0, cur = 0, vorige = null;
+  for (const k of keys) {
+    if (vorige) {
+      const d = new Date(vorige + "T12:00:00"); d.setDate(d.getDate()+1);
+      cur = (dateKey(d) === k) ? cur + 1 : 1;
+    } else cur = 1;
+    if (cur > best) best = cur;
+    vorige = k;
+  }
+  return best;
+}
+
+// --- reeksen (weekdoel-gewoontes) ---
+function weekStart(d) {
+  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12);
+  x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); // maandag
+  return x;
+}
+function telInWeek(days, ws) {
+  let n = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(ws); d.setDate(ws.getDate() + i);
+    if (days[dateKey(d)]) n++;
+  }
+  return n;
+}
+function weekReeks(h) {
+  let ws = weekStart(new Date());
+  let n = 0;
+  if (telInWeek(h.days, ws) >= h.weekGoal) n++; // huidige week telt mee als al gehaald
+  while (true) {
+    ws = new Date(ws); ws.setDate(ws.getDate() - 7);
+    if (telInWeek(h.days, ws) >= h.weekGoal) n++; else break;
+  }
+  return n;
+}
+function besteWeekReeks(h) {
+  const keys = Object.keys(h.days).sort();
+  if (!keys.length) return 0;
+  let ws = weekStart(new Date(keys[0] + "T12:00:00"));
+  const eind = weekStart(new Date());
+  let best = 0, cur = 0;
+  while (ws <= eind) {
+    if (telInWeek(h.days, ws) >= h.weekGoal) { cur++; if (cur > best) best = cur; }
+    else if (ws.getTime() !== eind.getTime()) cur = 0; // lopende week breekt de reeks niet
+    ws = new Date(ws); ws.setDate(ws.getDate() + 7);
+  }
+  return best;
+}
+
+// ---------- kop & badge ----------
+function tekenKop() {
+  document.getElementById("datum").textContent =
+    new Date().toLocaleDateString("nl-NL",{weekday:"long",day:"numeric",month:"long"});
+  const el = document.getElementById("dagvoortgang");
+  if (data.habits.length === 0) { el.innerHTML = ""; return; }
+  const klaar = data.habits.filter(h => h.days[vandaagKey()]).length;
+  el.innerHTML =
+    `<div class="dagbalk-label"><span>Gewoontes vandaag</span><b>${klaar}/${data.habits.length}</b></div>
+     <div class="dagbalk">${data.habits.map(h => `<div class="${h.days[vandaagKey()]?"aan":""}"></div>`).join("")}</div>`;
+}
+function tekenBadge() {
+  const open = data.tasks.filter(t => !t.done).length;
+  const b = document.getElementById("badge-taken");
+  b.style.display = open ? "flex" : "none";
+  b.textContent = open;
+}
+
+// ---------- schermen ----------
+let tab = "taken";
+function gaNaar(t) { tab = t; teken(); }
+
+function teken() {
+  tekenKop();
+  tekenBadge();
+  ["taken","gewoontes","budget"].forEach(t =>
+    document.getElementById("tab-"+t).classList.toggle("aan", t === tab));
+  const s = document.getElementById("scherm");
+  if (tab === "taken") s.innerHTML = htmlTaken();
+  if (tab === "gewoontes") s.innerHTML = htmlGewoontes();
+  if (tab === "budget") s.innerHTML = htmlBudget();
+}
+
+// ---------- taken ----------
+let bewerkTaakId = null;
+
+function deadlineBadge(due) {
+  if (!due) return "";
+  const t = vandaagKey();
+  if (due < t) return `<span class="dl telaat">te laat</span>`;
+  if (due === t) return `<span class="dl vandaag">vandaag</span>`;
+  return `<span class="dl">${new Date(due+"T12:00:00").toLocaleDateString("nl-NL",{day:"numeric",month:"short"})}</span>`;
+}
+
+function htmlTaken() {
+  const open = [...data.tasks.filter(t => !t.done)].sort((a,b) => {
+    const s = (b.star?1:0) - (a.star?1:0);
+    if (s) return s;
+    const ad = a.due || "9999", bd = b.due || "9999";
+    return ad < bd ? -1 : ad > bd ? 1 : 0;
+  });
+  const klaar = data.tasks.filter(t => t.done);
+  const rij = t => {
+    if (bewerkTaakId === t.id) {
+      return `<li class="rij">
+        <input id="bewerk-taak" value="${esc(t.title)}" onkeydown="if(event.key==='Enter')slaTaakOp('${t.id}');if(event.key==='Escape')annuleerBewerk()">
+        <input type="date" id="bewerk-taak-datum" value="${t.due || ""}">
+        <button class="mini-knop" onclick="slaTaakOp('${t.id}')">✓</button>
+      </li>`;
+    }
+    return `<li class="rij ${t.done?"klaar":""} ${t.star && !t.done?"ster":""}">
+       <button class="vink ${t.done?"aan":""}" onclick="toggleTaak('${t.id}')"></button>
+       <span class="titel" ${t.done?"":`onclick="startBewerkTaak('${t.id}')"`}>${esc(t.title)}</span>
+       ${t.done ? "" : deadlineBadge(t.due)}
+       ${t.done ? "" : `<button class="ster-knop ${t.star?"aan":""}" onclick="toggleSter('${t.id}')">★</button>`}
+       <button class="ikoon-knop" onclick="wisTaak('${t.id}')">🗑</button>
+     </li>`;
+  };
+  return `
+    <div class="invoer">
+      <input id="taak-in" placeholder="Nieuwe taak…" onkeydown="if(event.key==='Enter')voegTaakToe()">
+      <button class="knop" onclick="voegTaakToe()">+</button>
+    </div>
+    <div class="invoer-extra">
+      <span>Deadline (optioneel):</span>
+      <input type="date" id="taak-datum">
+    </div>
+    ${open.length===0 && klaar.length===0 ? `<p class="leeg">Nog geen taken.<br>Voeg hierboven je eerste taak toe.<br><span style="font-size:12px">Tip: markeer je belangrijkste taak met ★ — die doe je eerst.<br>Tik op een taak om hem te bewerken.</span></p>` : ""}
+    <ul>${open.map(rij).join("")}</ul>
+    ${klaar.length ? `<p class="sectiekop"><span>Klaar (${klaar.length})</span><button class="link-knop" onclick="wisAfgerond()">Wis afgeronde</button></p><ul>${klaar.map(rij).join("")}</ul>` : ""}`;
+}
+function voegTaakToe() {
+  const el = document.getElementById("taak-in");
+  const dEl = document.getElementById("taak-datum");
+  const t = el.value.trim(); if (!t) return;
+  data.tasks.unshift({ id: uid(), title: t, done: false, star: false, due: dEl.value || null });
+  bewaar(); teken();
+  const nieuw = document.getElementById("taak-in");
+  if (nieuw) nieuw.focus();
+}
+function startBewerkTaak(id) { bewerkTaakId = id; teken(); const el = document.getElementById("bewerk-taak"); if (el) el.focus(); }
+function slaTaakOp(id) {
+  const t = data.tasks.find(x => x.id === id);
+  const el = document.getElementById("bewerk-taak");
+  const dEl = document.getElementById("bewerk-taak-datum");
+  if (t && el && el.value.trim()) { t.title = el.value.trim(); t.due = dEl.value || null; }
+  bewerkTaakId = null;
+  bewaar(); teken();
+}
+function annuleerBewerk() { bewerkTaakId = null; bewerkGewoonteId = null; teken(); }
+function toggleTaak(id) {
+  const t = data.tasks.find(x => x.id === id);
+  if (t) { t.done = !t.done; bewaar(); teken(); }
+}
+function toggleSter(id) {
+  const t = data.tasks.find(x => x.id === id);
+  if (t) { t.star = !t.star; bewaar(); teken(); }
+}
+function wisTaak(id) { data.tasks = data.tasks.filter(x => x.id !== id); bewaar(); teken(); }
+function wisAfgerond() { data.tasks = data.tasks.filter(x => !x.done); bewaar(); teken(); }
+
+// ---------- gewoontes ----------
+let bewerkGewoonteId = null;
+let openMaand = {};
+
+function heatmapHtml(h) {
+  const nu = new Date();
+  const y = nu.getFullYear(), m = nu.getMonth();
+  const pad = (new Date(y, m, 1).getDay() + 6) % 7; // maandag eerst
+  const aantal = new Date(y, m + 1, 0).getDate();
+  let cellen = "";
+  for (let i = 0; i < pad; i++) cellen += `<span></span>`;
+  for (let d = 1; d <= aantal; d++) {
+    const k = dateKey(new Date(y, m, d));
+    if (k > vandaagKey()) cellen += `<span class="hm toekomst">${d}</span>`;
+    else cellen += `<button class="hm ${h.days[k]?"aan":""} ${k===vandaagKey()?"vandaag":""}" onclick="toggleDag('${h.id}','${k}')">${d}</button>`;
+  }
+  return `<div class="hm-grid">
+    ${["ma","di","wo","do","vr","za","zo"].map(d => `<span class="hm-kop">${d}</span>`).join("")}
+    ${cellen}
+  </div>`;
+}
+
+function htmlGewoontes() {
+  const week = laatste7();
+  const kaart = h => {
+    const totaal = Object.keys(h.days).length;
+    let kop, stats;
+    if (bewerkGewoonteId === h.id) {
+      kop = `<div class="habit-bewerk">
+        <input id="bewerk-habit" value="${esc(h.name)}" onkeydown="if(event.key==='Enter')slaGewoonteOp('${h.id}');if(event.key==='Escape')annuleerBewerk()">
+        <input class="smal" id="bewerk-habit-doel" inputmode="numeric" placeholder="p/wk" value="${h.weekGoal || ""}">
+        <button class="mini-knop" onclick="slaGewoonteOp('${h.id}')">✓</button>
+      </div>`;
+    } else {
+      kop = `<span class="naam" onclick="startBewerkGewoonte('${h.id}')">${esc(h.name)}${h.weekGoal ? `<span class="doel-tag">${h.weekGoal}× p/wk</span>` : ""}</span>
+        <button class="ikoon-knop" onclick="wisGewoonte('${h.id}')">🗑</button>`;
+    }
+    if (h.weekGoal) {
+      const dezeWeek = telInWeek(h.days, weekStart(new Date()));
+      stats = `<span>Deze week: <b>${dezeWeek}/${h.weekGoal}</b></span>
+        <span class="vuur">🔥 Reeks: <b>${weekReeks(h)} wk</b></span>
+        <span>🏆 Beste: <b>${besteWeekReeks(h)} wk</b></span>
+        <span>✓ Totaal: <b>${totaal}</b></span>`;
+    } else {
+      stats = `<span class="vuur">🔥 Reeks: <b>${huidigeReeks(h.days)}</b></span>
+        <span>🏆 Beste: <b>${besteReeks(h.days)}</b></span>
+        <span>✓ Totaal: <b>${totaal}</b></span>`;
+    }
+    return `<li class="habit">
+      <div class="habit-kop">${kop}</div>
+      <div class="week">
+        ${week.map(d => {
+          const k = dateKey(d);
+          return `<button class="dagvak ${h.days[k]?"aan":""} ${k===vandaagKey()?"vandaag":""}"
+                    onclick="toggleDag('${h.id}','${k}')">
+                    <span class="dg">${DAG_KORT[d.getDay()]}</span><span class="nr">${d.getDate()}</span>
+                  </button>`;
+        }).join("")}
+      </div>
+      <div class="habit-stats">
+        ${stats}
+        <button class="link-knop maand-knop" onclick="toggleMaand('${h.id}')">${openMaand[h.id] ? "Maand ▴" : "Maand ▾"}</button>
+      </div>
+      ${openMaand[h.id] ? heatmapHtml(h) : ""}
+    </li>`;
+  };
+  return `
+    <div class="invoer">
+      <input id="habit-in" placeholder="Nieuwe gewoonte (bijv. 30 min studeren)…" onkeydown="if(event.key==='Enter')voegGewoonteToe()">
+      <input class="smal" id="habit-doel" inputmode="numeric" placeholder="p/wk">
+      <button class="knop" onclick="voegGewoonteToe()">+</button>
+    </div>
+    <div class="invoer-extra"><span>p/wk = doel per week (bijv. 3 voor sporten). Leeg = elke dag.</span></div>
+    ${data.habits.length===0 ? `<p class="leeg">Nog geen gewoontes.<br>Begin klein: één gewoonte die je elke dag kunt volhouden.<br><span style="font-size:12px">Tik op de naam van een gewoonte om hem te bewerken.</span></p>` : ""}
+    <ul>${data.habits.map(kaart).join("")}</ul>`;
+}
+function voegGewoonteToe() {
+  const el = document.getElementById("habit-in");
+  const dEl = document.getElementById("habit-doel");
+  const n = el.value.trim(); if (!n) return;
+  let goal = parseInt(dEl.value, 10);
+  if (!goal || goal < 1 || goal > 6) goal = null; // 7+ of leeg = dagelijks
+  data.habits.push({ id: uid(), name: n, days: {}, weekGoal: goal });
+  bewaar(); teken();
+}
+function startBewerkGewoonte(id) { bewerkGewoonteId = id; teken(); const el = document.getElementById("bewerk-habit"); if (el) el.focus(); }
+function slaGewoonteOp(id) {
+  const h = data.habits.find(x => x.id === id);
+  const el = document.getElementById("bewerk-habit");
+  const dEl = document.getElementById("bewerk-habit-doel");
+  if (h && el && el.value.trim()) {
+    h.name = el.value.trim();
+    let goal = parseInt(dEl.value, 10);
+    h.weekGoal = (!goal || goal < 1 || goal > 6) ? null : goal;
+  }
+  bewerkGewoonteId = null;
+  bewaar(); teken();
+}
+function toggleMaand(id) { openMaand[id] = !openMaand[id]; teken(); }
+function toggleDag(id, k) {
+  const h = data.habits.find(x => x.id === id);
+  if (!h) return;
+  if (h.days[k]) delete h.days[k]; else h.days[k] = true;
+  bewaar(); teken();
+}
+function wisGewoonte(id) {
+  if (!confirm("Deze gewoonte en de hele reeks verwijderen?")) return;
+  data.habits = data.habits.filter(x => x.id !== id);
+  bewaar(); teken();
+}
+
+// ---------- budget ----------
+let txType = "uit";
+let actiefPotje = null;
+let naarPotje = null;
+let filterPotje = null;
+let toonPotjeVorm = false;
+let maandOffset = 0;
+
+function walletSaldo(id) {
+  return data.tx.reduce((s, t) => {
+    if (t.type === "in" && t.wallet === id) return s + t.amount;
+    if (t.type === "uit" && t.wallet === id) return s - t.amount;
+    if (t.type === "over") {
+      if (t.wallet === id) return s - t.amount;
+      if (t.toWallet === id) return s + t.amount;
+    }
+    return s;
+  }, 0);
+}
+
+// ---------- maandrapport ----------
+let toonRapport = false;
+const RAPPORT_KLEUREN = ["#047857","#d97706","#e11d48","#2563eb","#7c3aed","#0891b2","#65a30d","#db2777","#78716c"];
+
+function mpVan(offset) {
+  const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + offset);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+}
+function maandCijfers(mp) {
+  const tx = data.tx.filter(t => t.date.startsWith(mp));
+  let inM = 0, uitM = 0;
+  const perPotje = {};
+  data.wallets.forEach(w => perPotje[w.id] = { uit: 0, netto: 0 });
+  tx.forEach(t => {
+    const p = perPotje[t.wallet];
+    if (t.type === "in") { inM += t.amount; if (p) p.netto += t.amount; }
+    else if (t.type === "uit") { uitM += t.amount; if (p) { p.uit += t.amount; p.netto -= t.amount; } }
+    else if (t.type === "over") {
+      if (p) p.netto -= t.amount;
+      const q = perPotje[t.toWallet]; if (q) q.netto += t.amount;
+    }
+  });
+  return { inM, uitM, perPotje };
+}
+
+function rapportHtml() {
+  const mp = mpVan(maandOffset);
+  const { inM, uitM, perPotje } = maandCijfers(mp);
+  if (inM === 0 && uitM === 0) return `<div class="rapport"><p class="leeg" style="padding:12px">Geen transacties in deze maand — nog geen rapport.</p></div>`;
+
+  // spaarquote
+  let quoteHtml = "";
+  if (inM > 0) {
+    const q = Math.round((inM - uitM) / inM * 100);
+    quoteHtml = q >= 0
+      ? `<p class="quote">Je hield <b>${q}%</b> van je inkomsten over deze maand</p>`
+      : `<p class="quote min">Je gaf <b>${Math.abs(q)}%</b> méér uit dan er binnenkwam</p>`;
+  }
+
+  // donut: uitgaven per potje
+  const posten = data.wallets
+    .map((w, i) => ({ naam: w.name, uit: perPotje[w.id].uit, kleur: RAPPORT_KLEUREN[i % RAPPORT_KLEUREN.length] }))
+    .filter(p => p.uit > 0)
+    .sort((a, b) => b.uit - a.uit);
+  let donut = "", legenda = "";
+  if (uitM > 0) {
+    let acc = 0;
+    const stops = posten.map(p => {
+      const van = acc / uitM * 360; acc += p.uit;
+      return `${p.kleur} ${van.toFixed(1)}deg ${(acc / uitM * 360).toFixed(1)}deg`;
+    }).join(", ");
+    donut = `<div class="donut" style="background:conic-gradient(${stops})"><div class="donut-gat"><span>${eur.format(uitM)}</span><span class="sub">uitgaven</span></div></div>`;
+    legenda = `<ul class="legenda">${posten.map(p =>
+      `<li><span class="stip" style="background:${p.kleur}"></span><span class="lnaam">${esc(p.naam)}</span><span class="bedragje">${eur.format(p.uit)}</span><b>${Math.round(p.uit / uitM * 100)}%</b></li>`).join("")}</ul>`;
+  }
+
+  // netto per potje (gespaard of ingeteerd)
+  const nettoLijst = data.wallets.map(w => ({ naam: w.name, n: perPotje[w.id].netto }))
+    .filter(p => Math.abs(p.n) >= 0.005)
+    .sort((a, b) => b.n - a.n);
+  const nettoHtml = nettoLijst.length
+    ? `<p class="rapport-kop">Netto per potje (gespaard of ingeteerd)</p><ul class="legenda">${nettoLijst.map(p =>
+        `<li><span class="lnaam">${esc(p.naam)}</span><b class="${p.n < 0 ? "min" : "plus"}">${p.n >= 0 ? "+" : "−"}${eur.format(Math.abs(p.n))}</b></li>`).join("")}</ul>`
+    : "";
+
+  // laatste 6 maanden
+  const balken = [];
+  for (let i = 5; i >= 0; i--) {
+    const off = maandOffset - i;
+    const c = maandCijfers(mpVan(off));
+    balken.push({ off, mp: mpVan(off), in: c.inM, uit: c.uitM });
+  }
+  const max = Math.max(1, ...balken.map(b => Math.max(b.in, b.uit)));
+  const hoogte = v => v > 0 ? Math.max(4, Math.round(v / max * 100)) : 0;
+  const staafHtml = `<p class="rapport-kop">Laatste 6 maanden</p><div class="staven">${balken.map(b => {
+    const d = new Date(b.mp + "-01T12:00:00");
+    return `<button class="staaf-kolom ${b.off === maandOffset ? "actief" : ""}" onclick="gaNaarMaand(${b.off})">
+      <span class="staaf-vak">
+        <span class="staaf in" style="height:${hoogte(b.in)}%"></span>
+        <span class="staaf uit" style="height:${hoogte(b.uit)}%"></span>
+      </span>
+      <span class="staaf-label">${d.toLocaleDateString("nl-NL", { month: "short" })}</span>
+    </button>`;
+  }).join("")}</div><p class="hint" style="text-align:center">groen = binnen · rood = uit · tik op een maand</p>`;
+
+  // patronen (regels, lokaal berekend op je eigen data)
+  const vorige = maandCijfers(mpVan(maandOffset - 1));
+  const tips = [];
+  if (posten.length && uitM > 0) {
+    tips.push(`Grootste kostenpost: <b>${esc(posten[0].naam)}</b> — ${Math.round(posten[0].uit / uitM * 100)}% van je uitgaven.`);
+  }
+  if (vorige.uitM > 0 && uitM > 0) {
+    const v = Math.round((uitM - vorige.uitM) / vorige.uitM * 100);
+    if (v >= 10) tips.push(`Je totale uitgaven stegen <b>${v}%</b> ten opzichte van vorige maand.`);
+    else if (v <= -10) tips.push(`Je gaf <b>${Math.abs(v)}%</b> minder uit dan vorige maand — goed bezig.`);
+  }
+  if (vorige.uitM > 0) {
+    let top = null;
+    data.wallets.forEach(w => {
+      const nu_ = perPotje[w.id].uit;
+      const eerder = vorige.perPotje[w.id] ? vorige.perPotje[w.id].uit : 0;
+      const delta = nu_ - eerder;
+      if (eerder > 0 && delta >= 25 && delta / eerder >= 0.25 && (!top || delta > top.delta)) top = { naam: w.name, delta };
+    });
+    if (top) tips.push(`<b>${esc(top.naam)}</b> steeg het hardst: ${eur.format(top.delta)} meer dan vorige maand.`);
+  }
+  data.wallets.filter(w => w.goal).forEach(w => {
+    const s = walletSaldo(w.id);
+    if (s >= w.goal) { tips.push(`Spaardoel van <b>${esc(w.name)}</b> is bereikt 🎉`); return; }
+    let som = 0, mnd = 0;
+    for (let i = 0; i < 3; i++) {
+      const c = maandCijfers(mpVan(maandOffset - i));
+      if (c.perPotje[w.id]) { som += c.perPotje[w.id].netto; mnd++; }
+    }
+    const gem = mnd ? som / mnd : 0;
+    if (gem > 0) tips.push(`In dit tempo (~${eur.format(gem)}/maand) bereik je het doel van <b>${esc(w.name)}</b> over ongeveer ${Math.ceil((w.goal - s) / gem)} maanden.`);
+  });
+  if (inM > 0 && uitM > inM) tips.push(`Let op: deze maand ging er ${eur.format(uitM - inM)} meer uit dan er binnenkwam.`);
+  const tipsHtml = tips.length
+    ? `<p class="rapport-kop">Patronen</p><ul class="tips">${tips.slice(0, 5).map(t => `<li>${t}</li>`).join("")}</ul>`
+    : "";
+
+  return `<div class="rapport">${quoteHtml}${donut}${legenda}${nettoHtml}${staafHtml}${tipsHtml}</div>`;
+}
+
+function htmlBudget() {
+  if (!actiefPotje || !data.wallets.find(w => w.id === actiefPotje)) actiefPotje = data.wallets[0].id;
+  if (naarPotje === actiefPotje || !naarPotje || !data.wallets.find(w => w.id === naarPotje)) {
+    const ander = data.wallets.find(w => w.id !== actiefPotje);
+    naarPotje = ander ? ander.id : null;
+  }
+
+  const mDatum = new Date();
+  mDatum.setDate(1);
+  mDatum.setMonth(mDatum.getMonth() + maandOffset);
+  const mp = `${mDatum.getFullYear()}-${String(mDatum.getMonth()+1).padStart(2,"0")}`;
+  const maandTx = data.tx.filter(t => t.date.startsWith(mp));
+  const inM = maandTx.filter(t=>t.type==="in").reduce((s,t)=>s+t.amount,0);
+  const uitM = maandTx.filter(t=>t.type==="uit").reduce((s,t)=>s+t.amount,0);
+  const saldo = inM - uitM;
+
+  const potjeKaart = w => {
+    const s = walletSaldo(w.id);
+    let doel = "";
+    if (w.goal) {
+      const pct = Math.max(0, Math.min(100, (s / w.goal) * 100));
+      doel = `<div class="doelbalk"><div style="width:${pct}%"></div></div>
+              <p class="doel-label">${eur.format(Math.max(0,s))} van ${eur.format(w.goal)} gespaard (${Math.round(pct)}%)</p>`;
+    }
+    return `<li class="potje ${filterPotje===w.id?"actief":""}" onclick="filterOpPotje('${w.id}')">
+      <div class="potje-kop">
+        <span class="naam">${esc(w.name)}</span>
+        <span style="display:flex;align-items:center;gap:6px">
+          <span class="bedrag ${s<0?"min":""}">${eur.format(s)}</span>
+          ${data.wallets.length>1 ? `<button class="ikoon-knop" onclick="event.stopPropagation();wisPotje('${w.id}')">🗑</button>` : ""}
+        </span>
+      </div>
+      ${doel}
+    </li>`;
+  };
+
+  const zichtbareTx = maandTx.filter(t => !filterPotje || t.wallet === filterPotje || t.toWallet === filterPotje);
+  const rij = t => {
+    const w = data.wallets.find(x => x.id === t.wallet);
+    let tag, icoon, teken_, kleur;
+    if (t.type === "over") {
+      const naar = data.wallets.find(x => x.id === t.toWallet);
+      tag = `${esc(w ? w.name : "?")} → ${esc(naar ? naar.name : "?")}`;
+      icoon = "⇄"; teken_ = ""; kleur = "over";
+    } else {
+      tag = esc(w ? w.name : "?");
+      icoon = t.type === "in" ? "↑" : "↓";
+      teken_ = t.type === "in" ? "+" : "−";
+      kleur = t.type;
+    }
+    return `<li class="rij">
+       <span class="tx-icoon ${kleur}">${icoon}</span>
+       <span class="tx-info">
+         <span class="oms">${esc(t.desc)}</span><br>
+         <span class="dat">${new Date(t.date+"T12:00:00").toLocaleDateString("nl-NL",{day:"numeric",month:"short"})}</span><span class="potje-tag">${tag}</span>
+       </span>
+       <span class="tx-bedrag ${kleur}">${teken_}${eur.format(t.amount)}</span>
+       <button class="ikoon-knop" onclick="wisTx('${t.id}')">🗑</button>
+     </li>`;
+  };
+
+  const maandLabel = mDatum.toLocaleDateString("nl-NL",{month:"long",year:"numeric"});
+
+  return `
+    <div class="saldo">
+      <div class="maand-nav">
+        <button onclick="maandTerug()">‹</button>
+        <p class="eyebrow" style="text-transform:capitalize">${maandLabel} · alle potjes</p>
+        <button onclick="maandVooruit()" ${maandOffset===0?"disabled":""}>›</button>
+      </div>
+      <p class="bedrag ${saldo<0?"min":""}">${eur.format(saldo)}</p>
+      <div class="stroom">
+        <span class="plus">↑ ${eur.format(inM)}</span>
+        <span class="minus">↓ ${eur.format(uitM)}</span>
+      </div>
+    </div>
+
+    <button class="rapport-toggle" onclick="toggleRapport()">📊 Maandrapport ${toonRapport ? "▴" : "▾"}</button>
+    ${toonRapport ? rapportHtml() : ""}
+
+    <p class="sectiekop"><span>Potjes${filterPotje ? " · gefilterd" : ""}</span><button class="link-knop" onclick="togglePotjeVorm()">+ Nieuw potje</button></p>
+    ${toonPotjeVorm ? `
+    <div class="mini-vorm">
+      <div class="velden">
+        <input id="potje-naam" placeholder="Naam (bijv. Boodschappen)">
+        <input id="potje-doel" inputmode="decimal" placeholder="Doel € (optioneel)">
+      </div>
+      <button class="vol-knop" onclick="voegPotjeToe()">Potje aanmaken</button>
+    </div>` : ""}
+    <ul>${data.wallets.map(potjeKaart).join("")}</ul>
+
+    <p class="sectiekop"><span>Nieuwe transactie</span></p>
+    <div class="tx-vorm">
+      <div class="type-kies">
+        <button class="${txType==="uit"?"uit-aan":""}" onclick="zetType('uit')">Uitgave</button>
+        <button class="${txType==="in"?"in-aan":""}" onclick="zetType('in')">Inkomsten</button>
+        <button class="${txType==="over"?"over-aan":""}" onclick="zetType('over')">Overboeken</button>
+      </div>
+      ${txType === "over" && data.wallets.length < 2
+        ? `<p class="hint">Maak eerst een tweede potje aan om te kunnen overboeken.</p>`
+        : txType === "over" ? `
+        <p class="chip-label">Van</p>
+        <div class="chips">${data.wallets.map(w => `<button class="${actiefPotje===w.id?"aan-over":""}" onclick="kiesPotje('${w.id}')">${esc(w.name)}</button>`).join("")}</div>
+        <p class="chip-label">Naar</p>
+        <div class="chips">${data.wallets.filter(w => w.id !== actiefPotje).map(w => `<button class="${naarPotje===w.id?"aan-over":""}" onclick="kiesNaarPotje('${w.id}')">${esc(w.name)}</button>`).join("")}</div>
+      ` : `
+        <div class="chips">${data.wallets.map(w => `<button class="${actiefPotje===w.id?"aan":""}" onclick="kiesPotje('${w.id}')">${esc(w.name)}</button>`).join("")}</div>
+      `}
+      <div class="tx-velden">
+        <input id="tx-bedrag" inputmode="decimal" placeholder="0,00">
+        <input type="date" id="tx-datum" value="${vandaagKey()}" max="${vandaagKey()}">
+      </div>
+      <div class="tx-velden">
+        <input id="tx-oms" placeholder="Omschrijving (bijv. boodschappen)" onkeydown="if(event.key==='Enter')voegTxToe()">
+      </div>
+      <button class="vol-knop" onclick="voegTxToe()">Toevoegen</button>
+    </div>
+
+    ${zichtbareTx.length===0
+      ? `<p class="leeg">${filterPotje ? "Geen transacties in dit potje deze maand." : "Geen transacties in deze maand."}</p>`
+      : `<ul>${zichtbareTx.map(rij).join("")}</ul>`}`;
+}
+function zetType(t) { txType = t; teken(); }
+function kiesPotje(id) { actiefPotje = id; teken(); }
+function kiesNaarPotje(id) { naarPotje = id; teken(); }
+function filterOpPotje(id) { filterPotje = (filterPotje === id) ? null : id; teken(); }
+function maandTerug() { maandOffset--; teken(); }
+function maandVooruit() { if (maandOffset < 0) { maandOffset++; teken(); } }
+function toggleRapport() { toonRapport = !toonRapport; teken(); }
+function gaNaarMaand(off) { if (off <= 0) { maandOffset = off; teken(); } }
+function togglePotjeVorm() { toonPotjeVorm = !toonPotjeVorm; teken(); if (toonPotjeVorm) { const el = document.getElementById("potje-naam"); if (el) el.focus(); } }
+function voegPotjeToe() {
+  const naamEl = document.getElementById("potje-naam");
+  const doelEl = document.getElementById("potje-doel");
+  const naam = naamEl.value.trim(); if (!naam) { naamEl.focus(); return; }
+  let goal = parseFloat(doelEl.value.replace(",", "."));
+  if (!goal || goal <= 0) goal = null;
+  const w = { id: uid(), name: naam, goal };
+  data.wallets.push(w);
+  actiefPotje = w.id;
+  toonPotjeVorm = false;
+  bewaar(); teken();
+}
+function wisPotje(id) {
+  const w = data.wallets.find(x => x.id === id);
+  const betrokken = data.tx.filter(t => t.wallet === id || t.toWallet === id).length;
+  const doel = data.wallets.find(x => x.id !== id);
+  if (!confirm(`Potje "${w.name}" verwijderen?${betrokken ? ` De ${betrokken} transactie(s) gaan naar "${doel.name}".` : ""}`)) return;
+  data.tx = data.tx.filter(t => !(t.type === "over" && ((t.wallet === id && t.toWallet === doel.id) || (t.toWallet === id && t.wallet === doel.id))));
+  data.tx.forEach(t => {
+    if (t.wallet === id) t.wallet = doel.id;
+    if (t.toWallet === id) t.toWallet = doel.id;
+  });
+  data.tx = data.tx.filter(t => !(t.type === "over" && t.wallet === t.toWallet));
+  data.wallets = data.wallets.filter(x => x.id !== id);
+  if (actiefPotje === id) actiefPotje = doel.id;
+  if (naarPotje === id) naarPotje = null;
+  if (filterPotje === id) filterPotje = null;
+  bewaar(); teken();
+}
+function voegTxToe() {
+  const b = document.getElementById("tx-bedrag");
+  const o = document.getElementById("tx-oms");
+  const dEl = document.getElementById("tx-datum");
+  const amount = parseFloat(b.value.replace(",", "."));
+  if (!amount || amount <= 0) { b.focus(); return; }
+  if (txType === "over" && (!naarPotje || naarPotje === actiefPotje || data.wallets.length < 2)) return;
+  let datum = dEl.value || vandaagKey();
+  if (datum > vandaagKey()) datum = vandaagKey();
+  const t = {
+    id: uid(), type: txType, amount,
+    desc: o.value.trim() || (txType==="in" ? "Inkomsten" : txType==="uit" ? "Uitgave" : "Overboeking"),
+    date: datum,
+    wallet: actiefPotje
+  };
+  if (txType === "over") t.toWallet = naarPotje;
+  data.tx.unshift(t);
+  data.tx.sort((a,b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
+  bewaar(); teken();
+}
+function wisTx(id) { data.tx = data.tx.filter(x => x.id !== id); bewaar(); teken(); }
+
+// ---------- back-up ----------
+function exportBackup() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `elke-dag-beter-backup-${vandaagKey()}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function importBackup(ev) {
+  const bestand = ev.target.files[0];
+  if (!bestand) return;
+  const lezer = new FileReader();
+  lezer.onload = () => {
+    try {
+      const p = JSON.parse(lezer.result);
+      if (!p || typeof p !== "object" || !Array.isArray(p.tasks)) throw new Error("ongeldig");
+      if (!confirm("Back-up terugzetten? Je huidige gegevens worden vervangen.")) return;
+      data = { tasks: p.tasks || [], habits: p.habits || [], wallets: p.wallets || [], tx: p.tx || [] };
+      migreer();
+      actiefPotje = null; naarPotje = null; filterPotje = null; maandOffset = 0;
+      bewerkTaakId = null; bewerkGewoonteId = null;
+      bewaar(); teken();
+    } catch (e) {
+      alert("Dit bestand is geen geldige back-up van deze app.");
+    }
+  };
+  lezer.readAsText(bestand);
+  ev.target.value = "";
+}
+
+// start
+teken();
+</script>
+</body>
+</html>
